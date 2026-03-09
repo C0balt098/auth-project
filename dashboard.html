@@ -1,54 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link rel="stylesheet" href="styles/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="dashboard">
-            <div class="header">
-                <h2>Dashboard</h2>
-                <button id="logoutBtn" class="btn logout-btn">Logout</button>
-            </div>
-            
-            <div class="user-info" id="userInfo">
-               
-            </div>
-            
-            <div class="tokens-info">
-                <h3>Tokens:</h3>
-                <div class="token-display">
-                    <strong>Access Token:</strong>
-                    <div class="token-value" id="accessToken"></div>
-                </div>
-                <div class="token-display">
-                    <strong>Refresh Token:</strong>
-                    <div class="token-value" id="refreshToken"></div>
-                </div>
-            </div>
-            
-            <div class="actions">
-                <h3>Test requests:</h3>
-                <div class="button-group">
-                    <button id="getUserBtn" class="btn primary-btn">👤 Get User Data</button>
-                    <button id="getProductsBtn" class="btn success-btn">📦 Get Products</button>
-                    <button id="testExpiredBtn" class="btn warning-btn">⚠️ Test Expired Token</button>
-                </div>
-            </div>
-            
-            <div class="result" id="apiResult">
-                <div class="result-placeholder">
-                    Click a button to make a request
-                </div>
-            </div>
+      <div class="dashboard">
+        <div class="header">
+          <h2>Dashboard</h2>
+          <button id="logoutBtn" class="btn logout-btn">Logout</button>
         </div>
+
+        <div class="user-info" id="userInfo"></div>
+
+        <div class="tokens-info">
+          <h3>Tokens:</h3>
+          <div class="token-display">
+            <strong>Access Token:</strong>
+            <div class="token-value" id="accessToken"></div>
+          </div>
+          <div class="token-display">
+            <strong>Refresh Token:</strong>
+            <div class="token-value" id="refreshToken"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <h3>Test requests:</h3>
+          <div class="button-group">
+            <button id="getUserBtn" class="btn primary-btn">
+              👤 Get User Data
+            </button>
+            <button id="getProductsBtn" class="btn success-btn">
+              📦 Get Products
+            </button>
+            <button id="testExpiredBtn" class="btn warning-btn">
+              ⚠️ Test Expired Token
+            </button>
+          </div>
+        </div>
+
+        <div class="result" id="apiResult">
+          <div class="result-placeholder">Click a button to make a request</div>
+        </div>
+      </div>
     </div>
 
-    <script src="auth.js"></script>
-    <script src="api.js"></script>
-    <script src="dashboard.js"></script>
-</body>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+  </body>
 </html>

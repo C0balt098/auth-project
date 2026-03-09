@@ -1,17 +1,56 @@
-class ApiService {
-  constructor() {
-    this.baseUrl = "https://dummyjson.com";
-    this.isRefreshing = false;
-    this.refreshSubscribers = [];
-  }
+import {auth, LoginResponse} from "./auth.js";
 
-  async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  needsRefresh?: boolean;
+}
+
+export interface RequestOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
+export interface ProductsResponse {
+  products: Product[];
+  total: number;
+  skip: number;
+  limit: number;
+}
+
+export interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  discountPercentage: number;
+  rating: number;
+  stock: number;
+  brand: string;
+  category: string;
+  thumbnail: string;
+  images: string[];
+}
+
+export type RefreshSubscriber = (token: string) => void;
+
+export class ApiService {
+  private readonly baseUrl: string = "https://dummyjson.com";
+  private isRefreshing: boolean = false;
+  private refreshSubscribers: RefreshSubscriber[] = [];
+
+  async request<T = any>(
+    endpoint: string,
+    options: RequestOptions = {}
+  ): Promise<ApiResponse<T>> {
+    const url: string = `${this.baseUrl}${endpoint}`;
 
     try {
       console.log(`Making request to: ${url}`);
-
-      let response = await this._fetchWithAuth(url, options);
+      let response: Response | undefined = await this._fetchWithAuth(
+        url,
+        options
+      );
 
       if (!response) {
         throw new Error("No response from server");
@@ -20,7 +59,7 @@ class ApiService {
       if (response.status === 401) {
         console.log("Token expired, attempting to refresh...");
 
-        const newToken = await this._refreshToken();
+        const newToken: string | null = await this._refreshToken();
 
         if (newToken) {
           response = await this._fetchWithAuth(url, options);
@@ -31,7 +70,7 @@ class ApiService {
       }
 
       if (!response.ok) {
-        const errorText = await response.text();
+        const errorText: string = await response.text();
         console.error("Response error:", response.status, errorText);
 
         try {
@@ -44,7 +83,7 @@ class ApiService {
         }
       }
 
-      const data = await response.json();
+      const data: T = await response.json();
 
       console.log("Request successful:", data);
 
@@ -52,24 +91,27 @@ class ApiService {
         success: true,
         data: data,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("API Error details:", {
-        message: error.message,
+        message: error instanceof Error ? error.message : "Unknown error",
         endpoint: endpoint,
         options: options,
       });
 
       return {
         success: false,
-        error: error.message || "Request failed",
+        error: error instanceof Error ? error.message : "Request failed",
       };
     }
   }
 
-  async _fetchWithAuth(url, options = {}) {
-    const token = auth.getAccessToken();
+  private async _fetchWithAuth(
+    url: string,
+    options: RequestOptions = {}
+  ): Promise<Response> {
+    const token: string | null = auth.getAccessToken();
 
-    const headers = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
       ...options.headers,
@@ -79,7 +121,7 @@ class ApiService {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const config = {
+    const config: RequestInit = {
       ...options,
       headers,
       method: options.method || "GET",
@@ -88,15 +130,19 @@ class ApiService {
     };
 
     try {
-      const response = await fetch(url, config);
+      const response: Response = await fetch(url, config);
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Fetch error:", error);
-      throw new Error(`Network error: ${error.message}`);
+      throw new Error(
+        `Network error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }
 
-  async _refreshToken() {
+  private async _refreshToken(): Promise<string | null> {
     try {
       if (this.isRefreshing) {
         console.log("Refresh already in progress, waiting...");
@@ -108,13 +154,13 @@ class ApiService {
       this.isRefreshing = true;
       console.log("Starting token refresh...");
 
-      const refreshToken = auth.getRefreshToken();
+      const refreshToken: string | null = auth.getRefreshToken();
 
       if (!refreshToken) {
         throw new Error("No refresh token available");
       }
 
-      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+      const response: Response = await fetch(`${this.baseUrl}/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -128,12 +174,12 @@ class ApiService {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
+        const errorText: string = await response.text();
         console.error("Refresh failed:", response.status, errorText);
         throw new Error(`Refresh failed with status ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
       console.log("Token successfully refreshed!", data);
 
@@ -147,12 +193,15 @@ class ApiService {
       this.refreshSubscribers = [];
 
       return data.accessToken;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Token refresh error:", error);
 
       this.refreshSubscribers = [];
 
-      if (error.message.includes("401") || error.message.includes("403")) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("401") || error.message.includes("403"))
+      ) {
         auth.logout();
       }
 
@@ -162,13 +211,14 @@ class ApiService {
     }
   }
 
-  async getCurrentUser() {
-    const result = await this.request("/auth/me");
+  async getCurrentUser(): Promise<ApiResponse<LoginResponse>> {
+    const result: ApiResponse<LoginResponse> =
+      await this.request<LoginResponse>("/auth/me");
 
     if (!result.success) {
       console.log("Trying alternative method for user data...");
 
-      const user = auth.getCurrentUser();
+      const user: LoginResponse | null = auth.getCurrentUser();
       if (user) {
         return {
           success: true,
@@ -180,9 +230,9 @@ class ApiService {
     return result;
   }
 
-  async getProducts() {
+  async getProducts(): Promise<ApiResponse<ProductsResponse>> {
     try {
-      const response = await fetch(`${this.baseUrl}/products`, {
+      const response: Response = await fetch(`${this.baseUrl}/products`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -190,27 +240,28 @@ class ApiService {
         mode: "cors",
       });
 
-      const data = await response.json();
+      const data: ProductsResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch products");
+        throw new Error((data as any).message || "Failed to fetch products");
       }
 
       return {
         success: true,
         data: data,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Products fetch error:", error);
       return {
         success: false,
-        error: error.message,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch products",
       };
     }
   }
 
-  async getExpiredTokenDemo() {
-    const result = await this.request("/auth/me-expired");
+  async getExpiredTokenDemo(): Promise<ApiResponse> {
+    const result: ApiResponse = await this.request("/auth/me-expired");
 
     if (!result.success) {
       return {
@@ -224,23 +275,24 @@ class ApiService {
   }
 }
 
-const api = new ApiService();
+export const api: ApiService = new ApiService();
 
-async function testConnection() {
+export async function testConnection(): Promise<boolean> {
   try {
-    const response = await fetch("https://dummyjson.com/products/1", {
+    const response: Response = await fetch("https://dummyjson.com/products/1", {
       mode: "cors",
     });
-    const data = await response.json();
+    const data: Product = await response.json();
     console.log("Connection test successful:", data);
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Connection test failed:", error);
     return false;
   }
 }
 
-testConnection().then((isConnected) => {
+
+testConnection().then((isConnected: boolean) => {
   if (!isConnected) {
     console.warn(
       "Cannot connect to DummyJSON API. Check your internet connection."
