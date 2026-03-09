@@ -34,39 +34,39 @@ Then open `index.html` in your browser.
 
 ---
 
-## Project Structure
+ Project Structure
 
-###Root Folder
+Root Folder
 The root folder contains TypeScript source files, HTML files, a styles folder, and a compiled JavaScript folder.
 
-####index.html - Login Page
+index.html - Login Page
 This is the first page users see. It contains a form with username and password input fields. The page has a "Sign In" button and hints with test credentials for login. The form is connected to the login.js JavaScript file, which handles the login process.
 
-####dashboard.html - Main Page After Login
+dashboard.html - Main Page After Login
 This is a protected page, accessible only to authenticated users. It displays user information, their access and refresh tokens, and three buttons for testing the API: getting user data, getting products list, and testing expired tokens. Request results are shown in a special block at the bottom of the page.
 
-####auth.ts - Authentication Service
+auth.ts - Authentication Service
 This file contains the AuthService class, which handles all login and logout logic. It sends login requests to the server with username and password, receives and saves tokens to localStorage, checks user authentication status, and handles logout. The file exports the AuthService class and an auth instance for use in other files.
 
-####api.ts - API Service
+api.ts - API Service
 This file contains the ApiService class, which wraps the standard fetch and adds an authorization token to every request. If a request returns a 401 error (token expired), the service automatically sends a refresh request with the refresh token, receives a new token pair, saves them, and retries the original request. It also implements a request queue so that when multiple simultaneous requests occur, token refresh happens only once.
 
-####dashboard.ts - Dashboard Logic
+dashboard.ts - Dashboard Logic
 This file manages everything that happens on the dashboard.html page. It checks if the user is authenticated (if not, redirects to login page), displays user information and their tokens, and handles clicks on the three test buttons by sending corresponding requests through api.ts and showing the results.
 
-####login.ts - Login Handler
+login.ts - Login Handler
 This file contains the login form logic that was moved from auth.ts. It gets username and password from input fields, calls the auth.login() method, and displays success or error messages. It also handles button states during login and redirects to dashboard on success.
 
-####js folder - Compiled JavaScript Files
+js folder - Compiled JavaScript Files
 After running tsc, all TypeScript files are compiled to JavaScript in this folder:
 
-#####js/auth.js - compiled authentication service
+js/auth.js - compiled authentication service
 
-#####js/api.js - compiled API service
+js/api.js - compiled API service
 
-#####js/dashboard.js - compiled dashboard logic
+js/dashboard.js - compiled dashboard logic
 
-#####js/login.js - compiled login handler
+js/login.js - compiled login handler
 
 ####styles folder with main.css file
 This folder contains all project styles. The main.css file has two main sections: styles for the login page (form, input fields, button, error messages) and styles for the main page after login (user info, token blocks, buttons, and results area).
