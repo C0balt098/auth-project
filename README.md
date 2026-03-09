@@ -68,7 +68,7 @@ js/dashboard.js - compiled dashboard logic
 
 js/login.js - compiled login handler
 
-####styles folder with main.css file
+styles folder with main.css file
 This folder contains all project styles. The main.css file has two main sections: styles for the login page (form, input fields, button, error messages) and styles for the main page after login (user info, token blocks, buttons, and results area).
 
 tsconfig.json
