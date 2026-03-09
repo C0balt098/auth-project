@@ -71,7 +71,7 @@ js/login.js - compiled login handler
 ####styles folder with main.css file
 This folder contains all project styles. The main.css file has two main sections: styles for the login page (form, input fields, button, error messages) and styles for the main page after login (user info, token blocks, buttons, and results area).
 
-####tsconfig.json
+tsconfig.json
 TypeScript configuration file that sets up strict mode and tells the compiler to output JavaScript files to the js folder.
 ---
 
